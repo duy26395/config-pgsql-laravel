@@ -1,4 +1,4 @@
-cp ./example/.env.example ./example/.env
+cp ./laravelApp/.env.example ./laravelApp/.env
 
 docker-compose up -d --build
 
