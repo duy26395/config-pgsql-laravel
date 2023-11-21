@@ -5,14 +5,14 @@ services:
     image: nginx:latest
     container_name: example_nginx
     volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
     ports:
-      - 7777:80
+      - 7001:80
   example_database:
     image: postgres:latest
     container_name: example_database
     ports:
-      - 7776:5432
+      - 7002:5432
     volumes:
       - /docker/pgdata:/var/lib/postgresql/data
     environment:
@@ -20,11 +20,10 @@ services:
       POSTGRES_DB: ex_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: JC5Ry3Sb
-
   example_php-fpm:
     build:
       context: .
-      dockerfile: docker/php-fpm/Dockerfile
+      dockerfile: Dockerfile
     container_name: example_php-fpm
     volumes:
       # - ./docker/php-fpm/php.ini:/usr/local/etc/php/php.ini
@@ -33,3 +32,10 @@ services:
     working_dir: /var/www/html
     stdin_open: true
     tty: true
+  example_redis:
+    image: redis:latest
+    container_name: example_redis
+    volumes:
+      - ./data/redis:/data
+    ports:
+      - 6379:6379
