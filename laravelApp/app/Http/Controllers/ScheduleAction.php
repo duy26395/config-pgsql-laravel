@@ -3,13 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ScheduleRequest;
-use App\Models\Coupon;
-use App\Models\Train;
-use App\Models\Type;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class ScheduleAction extends Controller
 {
@@ -24,35 +20,67 @@ class ScheduleAction extends Controller
         $res = [];
         $res = $this->get_schedule($date_time_start, $type, $coupon, $qty);
         return response()->json($res);
-        // $coupon = Coupon::find($coupon);
-        // $type = Type::where('code', $type)->firstOrFail();
-        // $carbonDatetime = Carbon::createFromFormat('d/m/Y H:i', $date_time_start);
-        // $time = $carbonDatetime->format('H:i');
-        // $train = DB::table('trains')->where('time_start', '>=', $time)
-        //     ->orderBy('time_start', 'ASC')->get();
-
-        // if (!$train->isEmpty()) {
-        //     $first = $train->first();
-        // } else {
-        //     $first = [];
-        // }
     }
 
     public function get_schedule($date_time, $type, $object, $qty = 1)
     {
         $res = [];
         $dateTime = Carbon::createFromFormat('d/m/Y H:i', $date_time);
-        if (!$dateTime || $dateTime->format('d/m/Y H:i') !== $date_time || intval($dateTime->format('Hi')) < intval(date('Hi'))) {
-            return "invalid input datetime";
-        }
+        // if (!$dateTime || $dateTime->format('d/m/Y H:i') !== $date_time || intval($dateTime->format('Hi')) < intval(date('Hi'))) {
+        //     throw new HttpResponseException(
+        //         response()->json([
+        //             'message' => 'invalid input datetime'
+        //         ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY)
+        //     );
+        // }
 
         if ($object > 4 || $object < 1) {
-            return "invalid input object";
+            throw new HttpResponseException(
+                response()->json([
+                    'message' => 'invalid input object'
+                ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY)
+            );
         }
         $ar_type = ['L1', 'L2', 'L3'];
         if (!in_array($type, $ar_type)) {
-            return "invalid input type";
+            throw new HttpResponseException(
+                response()->json([
+                    'message' => 'invalid input type'
+                ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY)
+            );
         }
+
+        //--Exception
+        //time 2023-11-22 12:01,type L1, object 1
+        //time 2023/11/22 11:00,type L1, object 0
+        //time 2023/11/22 11:00,type L5, object 1
+        //time 2022-11-21 12:01,type L1, object 1
+
+        //time 12:01,type L1, object 1
+        //time 09:00, type L1, object 1
+        //time 09:00, type L1, object 2
+        //time 09:00, type L1, object 3
+        //time 09:00, type L1, object 4
+        //time 09:00, type L2, object 1
+        //time 09:00, type L2, object 2
+        //time 09:00, type L2, object 3
+        //time 09:00, type L2, object 4
+        //time 09:00, type L3, object 1
+        //time 09:00, type L3, object 2
+        //time 09:00, type L3, object 3
+        //time 09:00, type L3, object 4
+        //time 07:30, type L1, object 1
+        //time 07:30, type L1, object 2
+        //time 07:30, type L1, object 3
+        //time 07:30, type L1, object 4
+        //time 07:30, type L2, object 1
+        //time 07:30, type L2, object 2
+        //time 07:30, type L2, object 3
+        //time 07:30, type L2, object 4
+        //time 07:30, type L3, object 1
+        //time 07:30, type L3, object 2
+        //time 07:30, type L3, object 3
+        //time 07:30, type L3, object 4
 
         $time = intval($dateTime->format('Hi'));
 
@@ -181,8 +209,6 @@ class ScheduleAction extends Controller
                     ]
                 ];
             }
-        } else {
-            return "none data";
         }
 
         return $res;
